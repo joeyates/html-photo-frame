@@ -70,9 +70,66 @@ class PhotoSlideshow {
     this.preloader = new Image()
     this.preloader.onload = this.imageLoaded.bind(this)
     this.preloader.onerror = this.imageFailed.bind(this)
+    this.captureInput()
     this.loadConfig().then(() => {
       this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
     })
+  }
+
+  captureInput() {
+    document.onkeydown = this.keydown.bind(this)
+  }
+
+  keydown(evt) {
+    evt = evt || window.event
+    switch(evt.keyCode) {
+    case 32: // <spacebar>
+      if (this.showNextTimeout) {
+        // Pause
+        this.stopTimeout()
+      } else {
+        // Restart
+        this.showPreloadingImageImmediatly()
+        this.preload(this.index)
+      }
+      break
+    case 37: // <-
+      this.showPreloadingImageImmediatly()
+      this.previous()
+      break
+    case 39: // ->
+      this.showPreloadingImageImmediatly()
+      this.next()
+      break
+    case 46: // <del>
+      this.stopTimeout()
+      this.removeCurrent()
+      this.showPreloadingImageImmediatly()
+      this.preload(this.index)
+      break
+    case 173: // -
+      // Slow down changes
+      this.timeout = this.timeout + 500
+      break
+    case 61: // +
+      // Speed up changes
+      if (this.timeout <= 500) {
+        return
+      }
+      this.timeout = this.timeout - 500
+      break
+    }
+  }
+
+  removeCurrent() {
+    if (this.images.length === 0) {
+      console.error("Can't remove last image")
+      return
+    }
+    this.images.splice(this.index)
+    if (this.index === this.images.length + 1) {
+      this.index = 0
+    }
   }
 
   loadConfig() {
@@ -97,6 +154,16 @@ class PhotoSlideshow {
     this.preload(0)
   }
 
+  previous() {
+    let nextIndex
+    if (this.index < 1) {
+      nextIndex = this.images.length - 1
+    } else {
+      nextIndex = this.index - 1
+    }
+    this.preload(nextIndex)
+  }
+
   next() {
     let nextIndex
     if (this.index < this.images.length - 1) {
@@ -107,10 +174,22 @@ class PhotoSlideshow {
     this.preload(nextIndex)
   }
 
+  stopTimeout() {
+    if (this.showNextTimeout) {
+      clearTimeout(this.showNextTimeout)
+      this.showNextTimeout = null
+    }
+  }
+
   preload(index) {
+    this.stopTimeout()
     const next = this.images[index]
     this.preloadIndex = index
     this.preloader.src = next.url
+  }
+
+  showPreloadingImageImmediatly() {
+    this.previousShow = null
   }
 
   imageLoaded() {
@@ -132,7 +211,7 @@ class PhotoSlideshow {
   }
 
   showNext() {
-    this.nextTimeout = null
+    this.showNextTimeout = null
     const viewport = this.viewer.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
     const viewportHeight = viewport.bottom - viewport.top - 16
@@ -172,10 +251,9 @@ class PhotoSlideshow {
   }
 
   imageFailed() {
-    console.error('imageFailed')
-    // TODO: remove the current image from this.images
-    // TODO: reset index if index was pointing at last image
-    // TODO: call preload
+    this.removeCurrent()
+    this.showPreloadingImageImmediatly()
+    this.preload(this.index)
   }
 }
 

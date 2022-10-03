@@ -186,6 +186,24 @@ class PhotoSlideshow {
       this.timeout = this.timeout - 500
       break
     }
+    case 81: { // q
+      const changed = this.logger.lessVerbose()
+      if (changed) {
+        console.debug(`Logger level reduced to ${this.logger.level}`)
+      } else {
+        console.debug(`Logger level unchanged: ${this.logger.level}`)
+      }
+      break
+    }
+    case 86: { // v
+      const changed = this.logger.moreVerbose()
+      if (changed) {
+        console.debug(`Logger level increased to ${this.logger.level}`)
+      } else {
+        console.debug(`Logger level unchanged: ${this.logger.level}`)
+      }
+      break
+    }
     case 173: { // -
       // Slow down changes
       this.timeout = this.timeout + 500

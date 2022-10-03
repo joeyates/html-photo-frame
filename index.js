@@ -189,7 +189,7 @@ class PhotoSlideshow {
   }
 
   removeCurrent() {
-    if (this.images.length === 0) {
+    if (this.images.length <= 1) {
       this.logger.error("Can't remove last image")
       return
     }

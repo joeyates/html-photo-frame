@@ -83,6 +83,7 @@ class PhotoSlideshow {
     this.images = null
     this.img = null
     this.loadCheckInterval = null
+    this.logger = null
     this.index = null
     this.showNextTimeout = null
     this.preloader = null
@@ -126,6 +127,7 @@ class PhotoSlideshow {
   }
 
   run() {
+    this.logger = new Logger()
     if (!this.ok) {
       return
     }
@@ -188,9 +190,11 @@ class PhotoSlideshow {
 
   removeCurrent() {
     if (this.images.length === 0) {
-      console.error("Can't remove last image")
+      this.logger.error("Can't remove last image")
       return
     }
+    const image = this.images[this.index]
+    this.logger.debug(`Removing image ${this.index}/${this.images.length} '${image.url}'`)
     this.images.splice(this.index)
     if (this.index === this.images.length + 1) {
       this.index = 0
@@ -233,8 +237,10 @@ class PhotoSlideshow {
     let nextIndex
     if (this.index < this.images.length - 1) {
       nextIndex = this.index + 1
+      this.logger.debug('Incrementing image index')
     } else {
       nextIndex = 0
+      this.logger.debug('Reached last image, looping back to first')
     }
     this.preload(nextIndex)
   }
@@ -249,6 +255,7 @@ class PhotoSlideshow {
   preload(index) {
     this.stopTimeout()
     const next = this.images[index]
+    this.logger.debug(`Preloading image ${index}/${this.images.length}, '${next.url}'`)
     this.preloadIndex = index
     this.preloader.src = next.url
   }
@@ -258,6 +265,8 @@ class PhotoSlideshow {
   }
 
   imageLoaded() {
+    const image = this.images[this.preloadIndex]
+    this.logger.debug(`Loading complete for image ${this.preloadIndex} '${image.url}'`)
     if (!this.previousShow) {
       this.showNext()
       return
@@ -276,14 +285,15 @@ class PhotoSlideshow {
   }
 
   showNext() {
+    this.index = this.preloadIndex
+    this.preloadIndex = null
+    const image = this.images[this.index]
+    this.logger.debug(`Showing preloaded image: '${image.url}'`)
     this.showNextTimeout = null
     const viewport = this.viewer.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
     const viewportHeight = viewport.bottom - viewport.top - 16
     const viewportProportions = viewportHeight / viewportWidth
-    this.index = this.preloadIndex
-    this.preloadIndex = null
-    const image = this.images[this.index]
     const imageWidth = image.width
     const imageHeight = image.height
     const imageProportions = imageHeight / imageWidth
@@ -316,6 +326,8 @@ class PhotoSlideshow {
   }
 
   imageFailed() {
+    const image = this.images[this.index]
+    this.logger.warn(`Failed to download image '${image.url}'`)
     this.removeCurrent()
     this.showPreloadingImageImmediatly()
     this.preload(this.index)

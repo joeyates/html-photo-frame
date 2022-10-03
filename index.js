@@ -35,35 +35,39 @@ class Logger {
     if (this.level < Logger.DEBUG) {
       return
     }
-    console.log((new Date()).toJSON(), ...args)
+    console.log(this.timestamp(), ...args)
   }
 
   info(...args) {
     if (this.level < Logger.INFO) {
       return
     }
-    console.log(...args)
+    console.log(this.timestamp(), ...args)
   }
 
   warn(...args) {
     if (this.level < Logger.WARN) {
       return
     }
-    console.log(...args)
+    console.log(this.timestamp(), ...args)
   }
 
   error(...args) {
     if (this.level < Logger.ERROR) {
       return
     }
-    console.log(...args)
+    console.log(this.timestamp(), ...args)
   }
 
   fatal(...args) {
     if (this.level < Logger.FATAL) {
       return
     }
-    console.log(...args)
+    console.log(this.timestamp(), ...args)
+  }
+
+  timestamp() {
+    return (new Date()).toJSON()
   }
 }
 

@@ -150,7 +150,7 @@ class PhotoSlideshow {
   keydown(evt) {
     evt = evt || window.event
     switch(evt.keyCode) {
-    case 32: // <spacebar>
+    case 32: { // <spacebar>
       if (this.showNextTimeout) {
         // Pause
         this.stopTimeout()
@@ -160,30 +160,36 @@ class PhotoSlideshow {
         this.preload(this.index)
       }
       break
-    case 37: // <-
+    }
+    case 37: { // <-
       this.showPreloadingImageImmediatly()
       this.previous()
       break
-    case 39: // ->
+    }
+    case 39: { // ->
       this.showPreloadingImageImmediatly()
       this.next()
       break
-    case 46: // <del>
+    }
+    case 46: { // <del>
       this.stopTimeout()
       this.removeCurrent()
       this.showPreloadingImageImmediatly()
       this.preload(this.index)
       break
-    case 173: // -
-      // Slow down changes
-      this.timeout = this.timeout + 500
-      break
-    case 61: // +
+    }
+    case 61: { // +
       // Speed up changes
       if (this.timeout <= 500) {
         return
       }
       this.timeout = this.timeout - 500
+      break
+    }
+    case 173: { // -
+      // Slow down changes
+      this.timeout = this.timeout + 500
+      console.debug(`Slide change timeout increased to ${this.timeout}`)
       break
     }
   }

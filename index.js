@@ -189,7 +189,7 @@ class PhotoSlideshow {
     }
     case 61: { // +
       // Speed up changes
-      if (this.timeout <= 500) {
+      if (this.timeout <= PhotoSlideshow.MINIMUM_TIMEOUT) {
         this.logger.debug(`Can't change slide change timeout as it is already at the quickest (${PhotoSlideshow.MINIMUM_TIMEOUT}ms)`)
         return
       }
@@ -373,6 +373,7 @@ class PhotoSlideshow {
 }
 
 PhotoSlideshow.DEFAULT_TIMEOUT = 5000
+PhotoSlideshow.MINIMUM_TIMEOUT = 500
 
 const viewer = document.getElementById('viewer')
 const slides = new PhotoSlideshow(window, viewer)

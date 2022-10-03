@@ -195,7 +195,7 @@ class PhotoSlideshow {
     }
     const image = this.images[this.index]
     this.logger.debug(`Removing image ${this.index}/${this.images.length} '${image.url}'`)
-    this.images.splice(this.index)
+    this.images.splice(this.index, 1)
     if (this.index === this.images.length + 1) {
       this.index = 0
     }

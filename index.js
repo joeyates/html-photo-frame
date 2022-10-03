@@ -158,24 +158,29 @@ class PhotoSlideshow {
       if (this.showNextTimeout) {
         // Pause
         this.stopTimeout()
+        this.logger.debug('Slideshow paused')
       } else {
         // Restart
+        this.logger.debug('Resuming slideshow')
         this.showPreloadingImageImmediatly()
         this.preload(this.index)
       }
       break
     }
     case 37: { // <-
+      this.logger.debug('Skipping backwards')
       this.showPreloadingImageImmediatly()
       this.previous()
       break
     }
     case 39: { // ->
+      this.logger.debug('Skipping forwards')
       this.showPreloadingImageImmediatly()
       this.next()
       break
     }
     case 46: { // <del>
+      this.logger.debug('Deleting current image')
       this.stopTimeout()
       this.removeCurrent()
       this.showPreloadingImageImmediatly()
@@ -185,33 +190,35 @@ class PhotoSlideshow {
     case 61: { // +
       // Speed up changes
       if (this.timeout <= 500) {
+        this.logger.debug(`Can't change slide change timeout as it is already at the quickest (${PhotoSlideshow.MINIMUM_TIMEOUT}ms)`)
         return
       }
       this.timeout = this.timeout - 500
+      this.logger.debug(`Slide change timeout reduced to ${this.timeout}ms`)
       break
     }
     case 81: { // q
       const changed = this.logger.lessVerbose()
       if (changed) {
-        console.debug(`Logger level reduced to ${this.logger.level}`)
+        this.logger.debug(`Logger level reduced to ${this.logger.level}`)
       } else {
-        console.debug(`Logger level unchanged: ${this.logger.level}`)
+        this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
       }
       break
     }
     case 86: { // v
       const changed = this.logger.moreVerbose()
       if (changed) {
-        console.debug(`Logger level increased to ${this.logger.level}`)
+        this.logger.debug(`Logger level increased to ${this.logger.level}`)
       } else {
-        console.debug(`Logger level unchanged: ${this.logger.level}`)
+        this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
       }
       break
     }
     case 173: { // -
       // Slow down changes
       this.timeout = this.timeout + 500
-      console.debug(`Slide change timeout increased to ${this.timeout}`)
+      this.logger.debug(`Slide change timeout increased to ${this.timeout}ms`)
       break
     }
     default:
@@ -246,7 +253,7 @@ class PhotoSlideshow {
 
   start() {
     if (!this.images) {
-      console.log('No config yet')
+      this.logger.debug('No config yet')
       return
     }
     clearInterval(this.loadCheckInterval)

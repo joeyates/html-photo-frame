@@ -210,6 +210,9 @@ class PhotoSlideshow {
       console.debug(`Slide change timeout increased to ${this.timeout}`)
       break
     }
+    default:
+      this.logger.debug(`Unhandled keypress: ${evt.keyCode}`)
+    }
   }
 
   removeCurrent() {

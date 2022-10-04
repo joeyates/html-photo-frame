@@ -83,24 +83,24 @@ class Viewer extends EventEmitter {
 
   preload(image, index) {
     this.preloader = new ImageDetails(image, index)
-    this.preloader.load(this.imageLoaded.bind(this), this.imageFailed.bind(this))
+    this.preloader.load(
+      this.imageLoaded.bind(this, image, index),
+      this.imageFailed.bind(this, image, index)
+    )
   }
 
   cancelPreload() {
     this.preloader = null
   }
 
-  imageLoaded() {
-    if (!this.preloader) {
-      return
-    }
-    this.ready = this.preloader
-    this.emit('imageLoaded', this.preloader.image, this.preloader.index)
+  imageLoaded(image, index) {
+    this.ready = new ImageDetails(image, index)
+    this.emit('imageLoaded', image, index)
     this.preloader = null
   }
 
-  imageFailed() {
-    this.emit('imageFailed', this.preloader.image, this.preloader.index)
+  imageFailed(image, index) {
+    this.emit('imageFailed', image, index)
     this.preloader = null
   }
 

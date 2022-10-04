@@ -5,6 +5,7 @@ class PhotoSlideshow {
   constructor(window, viewer) {
     this.window = window
     this.viewer = viewer
+    this.caption = null
     this._errors = null
     this.images = null
     this.img = null
@@ -15,6 +16,7 @@ class PhotoSlideshow {
     this.preloader = null
     this.preloadIndex = null
     this.previousShow = null
+    this.showCaption = false
     this.timeout = null
   }
 
@@ -57,6 +59,14 @@ class PhotoSlideshow {
     if (!this.ok) {
       return
     }
+    this.caption = document.createElement('h1')
+    this.caption.style.bottom = 0
+    this.caption.style['font-size'] = '1em'
+    this.caption.style.position = 'absolute'
+    this.caption.style['text-align'] = 'center'
+    this.caption.style.visibility = 'hidden'
+    this.caption.style.width = '100%'
+    this.viewer.append(this.caption)
     this.img = document.createElement('img')
     this.img.src = ''
     this.viewer.append(this.img)
@@ -118,6 +128,15 @@ class PhotoSlideshow {
       this.timeout = this.timeout - 500
       this.logger.debug(`Slide change timeout reduced to ${this.timeout}ms`)
       break
+    }
+    case 67: { // c
+      if (this.showCaption) {
+        this.showCaption = false
+        this.logger.debug('Hide caption')
+      } else {
+        this.showCaption = true
+        this.logger.debug('Show caption')
+      }
     }
     case 81: { // q
       const changed = this.logger.lessVerbose()
@@ -250,9 +269,10 @@ class PhotoSlideshow {
     const image = this.images[this.index]
     this.logger.debug(`Showing preloaded image: '${image.url}'`)
     this.showNextTimeout = null
+    const captionHeight = this.showCaption ? 20 : 0
     const viewport = this.viewer.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
-    const viewportHeight = viewport.bottom - viewport.top - 16
+    const viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
     const viewportProportions = viewportHeight / viewportWidth
     const imageWidth = image.width
     const imageHeight = image.height
@@ -281,6 +301,12 @@ class PhotoSlideshow {
     this.img.style.left = left
     this.img.style.top = top
     this.img.style.visibility = 'visible'
+    if (this.showCaption) {
+      this.caption.style.visibility = 'visible'
+      this.caption.innerHTML = this.img.src
+    } else {
+      this.caption.style.visibility = 'hidden'
+    }
     this.previousShow = new Date
     this.next()
   }

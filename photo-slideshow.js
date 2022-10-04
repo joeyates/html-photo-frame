@@ -1,6 +1,8 @@
 import Logger from './logger.js'
 import shuffle from './shuffle.js'
 
+const CAPTION_HEIGHT = 32
+
 class PhotoSlideshow {
   constructor(window, viewer) {
     this.window = window
@@ -61,12 +63,7 @@ class PhotoSlideshow {
       return
     }
     this.caption = document.createElement('h1')
-    this.caption.style.bottom = 0
-    this.caption.style['font-size'] = '1em'
-    this.caption.style.position = 'absolute'
-    this.caption.style['text-align'] = 'center'
-    this.caption.style.visibility = 'hidden'
-    this.caption.style.width = '100%'
+    this.caption.classList.add('caption')
     this.viewer.append(this.caption)
     this.img = document.createElement('img')
     this.img.src = ''
@@ -272,7 +269,7 @@ class PhotoSlideshow {
     const image = this.images[this.index]
     this.logger.debug(`Showing preloaded image: '${image.url}'`)
     this.showNextTimeout = null
-    const captionHeight = this.showCaption ? 20 : 0
+    const captionHeight = this.showCaption ? CAPTION_HEIGHT : 0
     const viewport = this.viewer.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
     const viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)

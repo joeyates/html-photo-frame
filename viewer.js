@@ -114,6 +114,9 @@ class Viewer extends EventEmitter {
   }
 
   resize() {
+    if (!this.showing) {
+      return
+    }
     const captionHeight = this.showCaption ? CAPTION_HEIGHT : 0
     const viewport = this.parent.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16

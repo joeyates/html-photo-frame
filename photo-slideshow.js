@@ -15,9 +15,9 @@ const RIGHT_ARROW = 39
 const SPACE = 32
 
 class PhotoSlideshow {
-  constructor(window, viewer) {
+  constructor(window, element) {
     this.window = window
-    this.viewer = viewer
+    this.element = element
     this.caption = null
     this._errors = null
     this.images = null
@@ -51,8 +51,8 @@ class PhotoSlideshow {
     if (!this.window) {
       this._errors.push('window is null')
     }
-    if (!this.viewer) {
-      this._errors.push('viewer is null')
+    if (!this.element) {
+      this._errors.push('element is null')
     }
     if (!this.configURL) {
       this._errors.push('supply a config=URL query parameter')
@@ -75,10 +75,10 @@ class PhotoSlideshow {
     }
     this.caption = document.createElement('h1')
     this.caption.classList.add('caption')
-    this.viewer.append(this.caption)
+    this.element.append(this.caption)
     this.img = document.createElement('img')
     this.img.src = ''
-    this.viewer.append(this.img)
+    this.element.append(this.img)
     this.preloader = new Image()
     this.preloader.onload = this.imageLoaded.bind(this)
     this.preloader.onerror = this.imageFailed.bind(this)
@@ -280,7 +280,7 @@ class PhotoSlideshow {
     this.logger.debug(`Showing preloaded image: '${image.url}'`)
     this.showNextTimeout = null
     const captionHeight = this.showCaption ? CAPTION_HEIGHT : 0
-    const viewport = this.viewer.getBoundingClientRect()
+    const viewport = this.element.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
     const viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
     const viewportProportions = viewportHeight / viewportWidth

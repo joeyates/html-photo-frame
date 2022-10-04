@@ -12,7 +12,7 @@ class EventEmitter {
     if (!callback) {
       return
     }
-    callback.call(...args)
+    callback.call(null, ...args)
   }
 }
 

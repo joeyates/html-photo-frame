@@ -13,6 +13,7 @@ class PhotoSlideshow {
     this.logger = null
     this.index = null
     this.showNextTimeout = null
+    this.paused = false
     this.preloader = null
     this.preloadIndex = null
     this.previousShow = null
@@ -87,15 +88,17 @@ class PhotoSlideshow {
     evt = evt || window.event
     switch(evt.keyCode) {
     case 32: { // <spacebar>
-      if (this.showNextTimeout) {
-        // Pause
-        this.stopTimeout()
-        this.logger.debug('Slideshow paused')
-      } else {
+      if (this.paused) {
         // Restart
-        this.logger.debug('Resuming slideshow')
         this.showPreloadingImageImmediatly()
         this.preload(this.index)
+        this.paused = false
+        this.logger.debug('Resuming slideshow')
+      } else {
+        // Pause
+        this.stopTimeout()
+        this.paused = true
+        this.logger.debug('Slideshow paused')
       }
       break
     }

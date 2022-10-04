@@ -86,16 +86,15 @@ class PhotoSlideshow {
     switch(evt.keyCode) {
     case 32: { // <spacebar>
       if (this.paused) {
-        // Restart
+        this.logger.debug('Resuming slideshow')
         this.showPreloadingImageImmediatly()
         this.preload(this.index)
         this.paused = false
-        this.logger.debug('Resuming slideshow')
       } else {
         // Pause
+        this.logger.debug('Pausing slideshow')
         this.stopTimeout()
         this.paused = true
-        this.logger.debug('Slideshow paused')
       }
       break
     }

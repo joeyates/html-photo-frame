@@ -272,6 +272,7 @@ class PhotoSlideshow {
 
   showPreloaded() {
     this.showNextTimeout = null
+    this.logger.debug(`Showing ${this.viewer.ready.image.url}`)
     this.viewer.showPreloaded()
     this.previousShow = new Date
     this.next()

@@ -2,8 +2,6 @@ import Logger from './logger.js'
 import shuffle from './shuffle.js'
 import Viewer from './viewer.js'
 
-const CAPTION_HEIGHT = 32
-
 // Character codes
 const DEL = 46
 const LEFT_ARROW = 37
@@ -139,9 +137,11 @@ class PhotoSlideshow {
     case LETTER_C: {
       if (this.viewer.showCaption) {
         this.viewer.showCaption = false
+        this.viewer.resize()
         this.logger.debug('Hide caption')
       } else {
         this.viewer.showCaption = true
+        this.viewer.resize()
         this.logger.debug('Show caption')
       }
     }
@@ -214,25 +214,21 @@ class PhotoSlideshow {
   }
 
   previous() {
-    let nextIndex
-    if (this.viewer.showIndex < 1) {
-      nextIndex = this.images.length - 1
-    } else {
-      nextIndex = this.viewer.showIndex - 1
+    let previousIndex = this.viewer.previousIndex
+    if (previousIndex < 0) {
+      previousIndex = this.images.length - 1
     }
-    this.logger.debug(`Preloading previous image, current ${this.viewer.showIndex}, next ${nextIndex}`)
-    this.preload(nextIndex)
+    this.logger.debug(`Preloading previous image, current ${this.viewer.showIndex}, next ${previousIndex}`)
+    this.preload(previousIndex)
   }
 
   next() {
-    let nextIndex
-    if (this.viewer.preloadIndex < this.images.length - 1) {
-      nextIndex = this.viewer.preloadIndex + 1
-      this.logger.debug(`Preloading image ${nextIndex}`)
-    } else {
+    let nextIndex = this.viewer.nextIndex
+    if (nextIndex >= this.images.length) {
       nextIndex = 0
       this.logger.debug('Reached last image, looping back to first')
     }
+    this.logger.debug(`Preloading image ${nextIndex}`)
     this.preload(nextIndex)
   }
 
@@ -254,9 +250,8 @@ class PhotoSlideshow {
     this.previousShow = null
   }
 
-  imageLoaded() {
-    const image = this.images[this.viewer.preloadIndex]
-    this.logger.debug(`Loading complete for image ${this.viewer.preloadIndex} '${image.url}'`)
+  imageLoaded(image, index) {
+    this.logger.debug(`Loading complete for image ${index} '${image.url}'`)
     if (!this.previousShow) {
       this.showPreloaded()
       return
@@ -275,17 +270,13 @@ class PhotoSlideshow {
   }
 
   showPreloaded() {
-    const image = this.images[this.viewer.preloadIndex]
-    this.logger.debug(`Showing preloaded image ${this.viewer.preloadIndex} '${image.url}'`)
     this.showNextTimeout = null
-    this.viewer.show()
+    this.viewer.showPreloaded()
     this.previousShow = new Date
     this.next()
   }
 
-  imageFailed() {
-    const image = this.viewer.preloadImage
-    const index = this.viewer.preloadIndex
+  imageFailed(image, index) {
     this.logger.warn(`Failed to download image '${image.url}'`)
     this.removeImage(index)
     let nextIndex

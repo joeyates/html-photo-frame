@@ -144,6 +144,7 @@ class PhotoSlideshow {
         this.viewer.resize()
         this.logger.debug('Show caption')
       }
+      break
     }
     case LETTER_Q: {
       const changed = this.logger.lessVerbose()

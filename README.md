@@ -30,9 +30,10 @@ a parameter: `https://example.com/photo-slideshow/index.html?json=slides.json`
 
 # Keybindings
 
-* "c" - reset the list of noted photos (see "n"),
+* "c" - toggle caption (filename) visibility,
 * "l" - get the list of noted photos (see "n"),
 * "n" - take note of a photo,
+* "r" - reset the list of noted photos (see "n"),
 * "<del>" - remove a photo from the list,
 * "<spacebar>" - pause,
 * "←" - go back,

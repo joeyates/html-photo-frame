@@ -3,6 +3,17 @@ import shuffle from './shuffle.js'
 
 const CAPTION_HEIGHT = 32
 
+// Character codes
+const DEL = 46
+const LEFT_ARROW = 37
+const LETTER_C = 67
+const LETTER_Q = 81
+const LETTER_V = 86
+const MINUS = 173
+const PLUS = 61
+const RIGHT_ARROW = 39
+const SPACE = 32
+
 class PhotoSlideshow {
   constructor(window, viewer) {
     this.window = window
@@ -84,7 +95,7 @@ class PhotoSlideshow {
   keydown(evt) {
     evt = evt || window.event
     switch(evt.keyCode) {
-    case 32: { // <spacebar>
+    case SPACE: {
       if (this.paused) {
         this.logger.debug('Resuming slideshow')
         this.showPreloadingImageImmediatly()
@@ -98,19 +109,19 @@ class PhotoSlideshow {
       }
       break
     }
-    case 37: { // <-
+    case LEFT_ARROW: {
       this.logger.debug('Skipping backwards')
       this.showPreloadingImageImmediatly()
       this.previous()
       break
     }
-    case 39: { // ->
+    case RIGHT_ARROW: {
       this.logger.debug('Skipping forwards')
       this.showPreloadingImageImmediatly()
       this.next()
       break
     }
-    case 46: { // <del>
+    case DEL: {
       this.logger.debug('Deleting current image')
       this.stopTimeout()
       this.removeCurrent()
@@ -118,7 +129,7 @@ class PhotoSlideshow {
       this.preload(this.index)
       break
     }
-    case 61: { // +
+    case PLUS: {
       // Speed up changes
       if (this.timeout <= PhotoSlideshow.MINIMUM_TIMEOUT) {
         this.logger.debug(`Can't change slide change timeout as it is already at the quickest (${PhotoSlideshow.MINIMUM_TIMEOUT}ms)`)
@@ -128,7 +139,7 @@ class PhotoSlideshow {
       this.logger.debug(`Slide change timeout reduced to ${this.timeout}ms`)
       break
     }
-    case 67: { // c
+    case LETTER_C: {
       if (this.showCaption) {
         this.showCaption = false
         this.logger.debug('Hide caption')
@@ -137,7 +148,7 @@ class PhotoSlideshow {
         this.logger.debug('Show caption')
       }
     }
-    case 81: { // q
+    case LETTER_Q: {
       const changed = this.logger.lessVerbose()
       if (changed) {
         this.logger.debug(`Logger level reduced to ${this.logger.level}`)
@@ -146,7 +157,7 @@ class PhotoSlideshow {
       }
       break
     }
-    case 86: { // v
+    case LETTER_V: {
       const changed = this.logger.moreVerbose()
       if (changed) {
         this.logger.debug(`Logger level increased to ${this.logger.level}`)
@@ -155,7 +166,7 @@ class PhotoSlideshow {
       }
       break
     }
-    case 173: { // -
+    case MINUS: {
       // Slow down changes
       this.timeout = this.timeout + 500
       this.logger.debug(`Slide change timeout increased to ${this.timeout}ms`)

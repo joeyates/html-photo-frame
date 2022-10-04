@@ -23,7 +23,6 @@ class PhotoSlideshow {
     this.images = null
     this.loadCheckInterval = null
     this.logger = null
-    this.index = null
     this.showNextTimeout = null
     this.paused = false
     this.previousShow = null
@@ -89,8 +88,7 @@ class PhotoSlideshow {
     case SPACE: {
       if (this.paused) {
         this.logger.debug('Resuming slideshow')
-        this.showPreloadingImageImmediatly()
-        this.preload(this.index)
+        this.next()
         this.paused = false
       } else {
         this.logger.debug('Pausing slideshow')
@@ -108,6 +106,7 @@ class PhotoSlideshow {
     }
     case RIGHT_ARROW: {
       this.logger.debug('Skipping forwards')
+      this.stopTimeout()
       this.showPreloadingImageImmediatly()
       this.next()
       break
@@ -115,9 +114,16 @@ class PhotoSlideshow {
     case DEL: {
       this.logger.debug('Deleting current image')
       this.stopTimeout()
-      this.removeCurrent()
+      const index = this.viewer.showIndex
+      this.removeImage(index)
+      let nextIndex
+      if (index === this.images.length) {
+        nextIndex = 0
+      } else {
+        nextIndex = index
+      }
       this.showPreloadingImageImmediatly()
-      this.preload(this.index)
+      this.preload(index)
       break
     }
     case PLUS: {
@@ -168,17 +174,21 @@ class PhotoSlideshow {
     }
   }
 
-  removeCurrent() {
-    if (this.images.length <= 1) {
+  removeImage(index) {
+    if (!index) {
+      return
+    }
+    if (index > this.images.length - 1) {
+      this.logger.error(`Can't remove image ${index}, max index is ${this.images.length}`)
+      return
+    }
+    if (this.images.length === 1) {
       this.logger.error("Can't remove last image")
       return
     }
-    const image = this.images[this.index]
-    this.logger.debug(`Removing image ${this.index}/${this.images.length} '${image.url}'`)
-    this.images.splice(this.index, 1)
-    if (this.index === this.images.length + 1) {
-      this.index = 0
-    }
+    const image = this.images[index]
+    this.logger.debug(`Removing image ${index}/${this.images.length} '${image.url}'`)
+    this.images.splice(index, 1)
   }
 
   loadConfig() {
@@ -199,25 +209,26 @@ class PhotoSlideshow {
       return
     }
     clearInterval(this.loadCheckInterval)
-    this.index = 0
+    this.logger.debug('Starting slideshow')
     this.preload(0)
   }
 
   previous() {
     let nextIndex
-    if (this.index < 1) {
+    if (this.viewer.showIndex < 1) {
       nextIndex = this.images.length - 1
     } else {
-      nextIndex = this.index - 1
+      nextIndex = this.viewer.showIndex - 1
     }
+    this.logger.debug(`Preloading previous image, current ${this.viewer.showIndex}, next ${nextIndex}`)
     this.preload(nextIndex)
   }
 
   next() {
     let nextIndex
-    if (this.index < this.images.length - 1) {
-      nextIndex = this.index + 1
-      this.logger.debug('Incrementing image index')
+    if (this.viewer.preloadIndex < this.images.length - 1) {
+      nextIndex = this.viewer.preloadIndex + 1
+      this.logger.debug(`Preloading image ${nextIndex}`)
     } else {
       nextIndex = 0
       this.logger.debug('Reached last image, looping back to first')
@@ -245,7 +256,7 @@ class PhotoSlideshow {
 
   imageLoaded() {
     const image = this.images[this.viewer.preloadIndex]
-    this.logger.debug(`Loading complete for image '${image.url}'`)
+    this.logger.debug(`Loading complete for image ${this.viewer.preloadIndex} '${image.url}'`)
     if (!this.previousShow) {
       this.showPreloaded()
       return
@@ -264,9 +275,8 @@ class PhotoSlideshow {
   }
 
   showPreloaded() {
-    this.index = this.viewer.preloadIndex
-    const image = this.images[this.index]
-    this.logger.debug(`Showing preloaded image: '${image.url}'`)
+    const image = this.images[this.viewer.preloadIndex]
+    this.logger.debug(`Showing preloaded image ${this.viewer.preloadIndex} '${image.url}'`)
     this.showNextTimeout = null
     this.viewer.show()
     this.previousShow = new Date
@@ -275,10 +285,17 @@ class PhotoSlideshow {
 
   imageFailed() {
     const image = this.viewer.preloadImage
+    const index = this.viewer.preloadIndex
     this.logger.warn(`Failed to download image '${image.url}'`)
-    this.removeCurrent()
+    this.removeImage(index)
+    let nextIndex
+    if (index === this.images.length) {
+      nextIndex = 0
+    } else {
+      nextIndex = index
+    }
     this.showPreloadingImageImmediatly()
-    this.preload(this.index)
+    this.preload(nextIndex)
   }
 }
 

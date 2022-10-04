@@ -11,6 +11,7 @@ class Viewer extends EventEmitter {
     this.preloadImage = null
     this.preloadIndex = null
     this.showCaption = false
+    this.showIndex = null
   }
 
   start() {
@@ -89,6 +90,7 @@ class Viewer extends EventEmitter {
     } else {
       this.caption.style.visibility = 'hidden'
     }
+    this.showIndex = this.preloadIndex
   }
 }
 

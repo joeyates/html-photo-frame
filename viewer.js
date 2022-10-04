@@ -148,7 +148,7 @@ class Viewer extends EventEmitter {
     this.img.style.visibility = 'visible'
     if (this.showCaption) {
       this.caption.style.visibility = 'visible'
-      this.caption.innerHTML = this.showing.src
+      this.caption.innerHTML = this.showing.image.url
     } else {
       this.caption.style.visibility = 'hidden'
     }

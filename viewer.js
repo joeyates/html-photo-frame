@@ -117,7 +117,7 @@ class Viewer extends EventEmitter {
     const captionHeight = this.showCaption ? CAPTION_HEIGHT : 0
     const viewport = this.parent.getBoundingClientRect()
     const viewportWidth = viewport.right - viewport.left - 16
-    const viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
+    let viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
     const viewportProportions = viewportHeight / viewportWidth
     const imageWidth = this.showing.image.width
     const imageHeight = this.showing.image.height
@@ -137,6 +137,8 @@ class Viewer extends EventEmitter {
       width = viewportWidth
       height = imageHeight / horizontalScaling
       left = 0
+      // Recalculate height ignoring caption
+      viewportHeight = viewport.bottom - viewport.top - 16
       top = `${(viewportHeight - height) / 2}px`
     }
     this.img.style.visibility = 'hidden'

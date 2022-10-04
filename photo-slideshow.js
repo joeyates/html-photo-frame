@@ -1,5 +1,6 @@
 import Logger from './logger.js'
 import shuffle from './shuffle.js'
+import Viewer from './viewer.js'
 
 const CAPTION_HEIGHT = 32
 
@@ -18,19 +19,14 @@ class PhotoSlideshow {
   constructor(window, element) {
     this.window = window
     this.element = element
-    this.caption = null
     this._errors = null
     this.images = null
-    this.img = null
     this.loadCheckInterval = null
     this.logger = null
     this.index = null
     this.showNextTimeout = null
     this.paused = false
-    this.preloader = null
-    this.preloadIndex = null
     this.previousShow = null
-    this.showCaption = false
     this.timeout = null
   }
 
@@ -73,15 +69,10 @@ class PhotoSlideshow {
     if (!this.ok) {
       return
     }
-    this.caption = document.createElement('h1')
-    this.caption.classList.add('caption')
-    this.element.append(this.caption)
-    this.img = document.createElement('img')
-    this.img.src = ''
-    this.element.append(this.img)
-    this.preloader = new Image()
-    this.preloader.onload = this.imageLoaded.bind(this)
-    this.preloader.onerror = this.imageFailed.bind(this)
+    this.viewer = new Viewer(this.element, this.logger)
+    this.viewer.addEventListener('imageLoaded', this.imageLoaded.bind(this))
+    this.viewer.addEventListener('imageFailed', this.imageFailed.bind(this))
+    this.viewer.start()
     this.captureInput()
     this.loadConfig().then(() => {
       this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
@@ -102,9 +93,9 @@ class PhotoSlideshow {
         this.preload(this.index)
         this.paused = false
       } else {
-        // Pause
         this.logger.debug('Pausing slideshow')
         this.stopTimeout()
+        this.viewer.cancelPreload()
         this.paused = true
       }
       break
@@ -140,11 +131,11 @@ class PhotoSlideshow {
       break
     }
     case LETTER_C: {
-      if (this.showCaption) {
-        this.showCaption = false
+      if (this.viewer.showCaption) {
+        this.viewer.showCaption = false
         this.logger.debug('Hide caption')
       } else {
-        this.showCaption = true
+        this.viewer.showCaption = true
         this.logger.debug('Show caption')
       }
     }
@@ -245,8 +236,7 @@ class PhotoSlideshow {
     this.stopTimeout()
     const next = this.images[index]
     this.logger.debug(`Preloading image ${index}/${this.images.length}, '${next.url}'`)
-    this.preloadIndex = index
-    this.preloader.src = next.url
+    this.viewer.preload(next, index)
   }
 
   showPreloadingImageImmediatly() {
@@ -254,10 +244,10 @@ class PhotoSlideshow {
   }
 
   imageLoaded() {
-    const image = this.images[this.preloadIndex]
-    this.logger.debug(`Loading complete for image ${this.preloadIndex} '${image.url}'`)
+    const image = this.images[this.viewer.preloadIndex]
+    this.logger.debug(`Loading complete for image '${image.url}'`)
     if (!this.previousShow) {
-      this.showNext()
+      this.showPreloaded()
       return
     }
     // We've waited for the image to download
@@ -266,63 +256,25 @@ class PhotoSlideshow {
     // Have we waited more than the usual wait time between images?
     const remainder = this.timeout - elapsed
     if (remainder < 0) {
-      this.showNext()
+      this.showPreloaded()
       return
     }
     // Wait the remainder of the time
-    this.showNextTimeout = setTimeout(this.showNext.bind(this), remainder)
+    this.showNextTimeout = setTimeout(this.showPreloaded.bind(this), remainder)
   }
 
-  showNext() {
-    this.index = this.preloadIndex
-    this.preloadIndex = null
+  showPreloaded() {
+    this.index = this.viewer.preloadIndex
     const image = this.images[this.index]
     this.logger.debug(`Showing preloaded image: '${image.url}'`)
     this.showNextTimeout = null
-    const captionHeight = this.showCaption ? CAPTION_HEIGHT : 0
-    const viewport = this.element.getBoundingClientRect()
-    const viewportWidth = viewport.right - viewport.left - 16
-    const viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
-    const viewportProportions = viewportHeight / viewportWidth
-    const imageWidth = image.width
-    const imageHeight = image.height
-    const imageProportions = imageHeight / imageWidth
-    let width, height
-    let left, top
-    if (imageProportions > viewportProportions) {
-      // leave space at the sides
-      const verticalScaling = imageHeight / viewportHeight
-      width = imageWidth / verticalScaling
-      height = viewportHeight
-      left = `${(viewportWidth - width) / 2}px`
-      top = 0
-    } else {
-      // leave space top and bottom
-      const horizontalScaling = imageWidth / viewportWidth
-      width = viewportWidth
-      height = imageHeight / horizontalScaling
-      left = 0
-      top = `${(viewportHeight - height) / 2}px`
-    }
-    this.img.style.visibility = 'hidden'
-    this.img.src = this.preloader.src
-    this.img.width = width
-    this.img.height = height
-    this.img.style.left = left
-    this.img.style.top = top
-    this.img.style.visibility = 'visible'
-    if (this.showCaption) {
-      this.caption.style.visibility = 'visible'
-      this.caption.innerHTML = this.img.src
-    } else {
-      this.caption.style.visibility = 'hidden'
-    }
+    this.viewer.show()
     this.previousShow = new Date
     this.next()
   }
 
   imageFailed() {
-    const image = this.images[this.index]
+    const image = this.viewer.preloadImage
     this.logger.warn(`Failed to download image '${image.url}'`)
     this.removeCurrent()
     this.showPreloadingImageImmediatly()

@@ -3,17 +3,21 @@ import EventEmitter from './event-emitter.js'
 const CAPTION_HEIGHT = 32
 
 class ImageDetails {
-  constructor(image, index) {
+  static clone(details) {
+    return new ImageDetails(details.image, details.index, details.img)
+  }
+
+  constructor(image, index, img) {
     this.image = image
     this.index = index
-    this.img = null
+    this.img = img
   }
 
   load(success, failure) {
-    this.img = new Image()
-    this.img.onload = success
-    this.img.onerror = failure
     this.img.src = this.image.url
+    this.img.decode()
+      .then(() => success.call(null, this))
+      .catch((...args) => failure.call(null, this, ...args))
   }
 }
 
@@ -76,16 +80,13 @@ class Viewer extends EventEmitter {
     this.caption = document.createElement('h1')
     this.caption.classList.add('caption')
     this.parent.append(this.caption)
-    this.img = document.createElement('img')
-    this.img.src = ''
-    this.parent.append(this.img)
   }
 
   preload(image, index) {
-    this.preloader = new ImageDetails(image, index)
+    this.preloader = new ImageDetails(image, index, new Image())
     this.preloader.load(
-      this.imageLoaded.bind(this, image, index),
-      this.imageFailed.bind(this, image, index)
+      this.imageLoaded.bind(this),
+      this.imageFailed.bind(this)
     )
   }
 
@@ -93,14 +94,14 @@ class Viewer extends EventEmitter {
     this.preloader = null
   }
 
-  imageLoaded(image, index) {
-    this.ready = new ImageDetails(image, index)
-    this.emit('imageLoaded', image, index)
+  imageLoaded(details) {
+    this.ready = ImageDetails.clone(details)
+    this.emit('imageLoaded', details.image, details.index)
     this.preloader = null
   }
 
-  imageFailed(image, index) {
-    this.emit('imageFailed', image, index)
+  imageFailed(details, ...args) {
+    this.emit('imageFailed', details.image, details.index)
     this.preloader = null
   }
 
@@ -109,7 +110,11 @@ class Viewer extends EventEmitter {
       return
     }
     this.logger.debug(`Showing preloaded image ${this.ready.index} '${this.ready.image.url}'`)
-    this.showing = this.ready
+    if (this.showing) {
+      this.showing.img.remove()
+    }
+    this.showing = ImageDetails.clone(this.ready)
+    this.parent.append(this.showing.img)
     this.resize()
   }
 
@@ -122,8 +127,8 @@ class Viewer extends EventEmitter {
     const viewportWidth = viewport.right - viewport.left - 16
     let viewportHeight = viewport.bottom - viewport.top - (16 + captionHeight)
     const viewportProportions = viewportHeight / viewportWidth
-    const imageWidth = this.showing.image.width
-    const imageHeight = this.showing.image.height
+    const imageWidth = this.showing.img.naturalWidth
+    const imageHeight = this.showing.img.naturalHeight
     const imageProportions = imageHeight / imageWidth
     let width, height
     let left, top
@@ -144,13 +149,10 @@ class Viewer extends EventEmitter {
       viewportHeight = viewport.bottom - viewport.top - 16
       top = `${(viewportHeight - height) / 2}px`
     }
-    this.img.style.visibility = 'hidden'
-    this.img.src = this.showing.image.url
-    this.img.width = width
-    this.img.height = height
-    this.img.style.left = left
-    this.img.style.top = top
-    this.img.style.visibility = 'visible'
+    this.showing.img.width = width
+    this.showing.img.height = height
+    this.showing.img.style.left = left
+    this.showing.img.style.top = top
     if (this.showCaption) {
       this.caption.style.visibility = 'visible'
       this.caption.innerHTML = this.showing.image.url

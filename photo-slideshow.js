@@ -71,6 +71,7 @@ class PhotoSlideshow {
     this.viewer.addEventListener('imageFailed', this.imageFailed.bind(this))
     this.viewer.start()
     this.captureInput()
+    this.trackWindowResizing()
     this.loadConfig().then(() => {
       this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
     })
@@ -78,6 +79,14 @@ class PhotoSlideshow {
 
   captureInput() {
     document.onkeydown = this.keydown.bind(this)
+  }
+
+  trackWindowResizing() {
+    this.window.addEventListener('resize', this.resize.bind(this))
+  }
+
+  resize() {
+    this.viewer.resize()
   }
 
   keydown(evt) {

@@ -12,6 +12,7 @@ class PhotoSlideshow {
     this.keyWatcher = null
     this.loadCheckInterval = null
     this.logger = null
+    this.notes = []
     this.showNextTimeout = null
     this.paused = false
     this.previousShow = null
@@ -89,11 +90,27 @@ class PhotoSlideshow {
     this.keyWatcher.addEventListener('left', this.goToPrevious.bind(this))
     this.keyWatcher.addEventListener('minus', this.slowDown.bind(this))
     this.keyWatcher.addEventListener('plus', this.speedUp.bind(this))
+    this.keyWatcher.addEventListener('l', this.listNotes.bind(this))
+    this.keyWatcher.addEventListener('n', this.addNote.bind(this))
     this.keyWatcher.addEventListener('q', this.lessVerbose.bind(this))
+    this.keyWatcher.addEventListener('r', this.resetNotes.bind(this))
     this.keyWatcher.addEventListener('right', this.goToNext.bind(this))
     this.keyWatcher.addEventListener('space', this.togglePause.bind(this))
     this.keyWatcher.addEventListener('v', this.moreVerbose.bind(this))
     this.keyWatcher.run()
+  }
+
+  addNote() {
+    const index = this.viewer.showIndex
+    if (index === null) {
+      return
+    }
+    const image = this.images[index]
+    const exists = this.notes.findIndex(url => url === image.url)
+    if (exists !== -1) {
+      return
+    }
+    this.notes.push(image.url)
   }
 
   goToNext() {
@@ -118,6 +135,10 @@ class PhotoSlideshow {
     }
   }
 
+  listNotes() {
+    alert(this.notes.join("\n"))
+  }
+
   moreVerbose() {
     const changed = this.logger.moreVerbose()
     if (changed) {
@@ -140,6 +161,10 @@ class PhotoSlideshow {
     }
     this.showPreloadingImageImmediatly()
     this.preload(index)
+  }
+
+  resetNotes() {
+    this.notes = []
   }
 
   slowDown() {

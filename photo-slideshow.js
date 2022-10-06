@@ -1,17 +1,7 @@
+import KeyWatcher from './key-watcher.js'
 import Logger from './logger.js'
 import shuffle from './shuffle.js'
 import Viewer from './viewer.js'
-
-// Character codes
-const DEL = 46
-const LEFT_ARROW = 37
-const LETTER_C = 67
-const LETTER_Q = 81
-const LETTER_V = 86
-const MINUS = 173
-const PLUS = 61
-const RIGHT_ARROW = 39
-const SPACE = 32
 
 class PhotoSlideshow {
   constructor(window, element) {
@@ -19,6 +9,7 @@ class PhotoSlideshow {
     this.element = element
     this._errors = null
     this.images = null
+    this.keyWatcher = null
     this.loadCheckInterval = null
     this.logger = null
     this.showNextTimeout = null
@@ -70,15 +61,121 @@ class PhotoSlideshow {
     this.viewer.addEventListener('imageLoaded', this.imageLoaded.bind(this))
     this.viewer.addEventListener('imageFailed', this.imageFailed.bind(this))
     this.viewer.start()
-    this.captureInput()
+    this.setupKeyWatcher()
     this.trackWindowResizing()
     this.loadConfig().then(() => {
       this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
     })
   }
 
-  captureInput() {
-    document.onkeydown = this.keydown.bind(this)
+  start() {
+    if (!this.images) {
+      this.logger.debug('No config yet')
+      return
+    }
+    clearInterval(this.loadCheckInterval)
+    this.logger.debug('Starting slideshow')
+    this.preload(0)
+  }
+
+  setupKeyWatcher() {
+    this.keyWatcher = new KeyWatcher(this.window.document, this.logger)
+    this.keyWatcher.addEventListener('c', this.toggleCaptions.bind(this))
+    this.keyWatcher.addEventListener('del', this.removeCurrent.bind(this))
+    this.keyWatcher.addEventListener('left', this.goToPrevious.bind(this))
+    this.keyWatcher.addEventListener('minus', this.slowDown.bind(this))
+    this.keyWatcher.addEventListener('plus', this.speedUp.bind(this))
+    this.keyWatcher.addEventListener('q', this.lessVerbose.bind(this))
+    this.keyWatcher.addEventListener('right', this.goToNext.bind(this))
+    this.keyWatcher.addEventListener('space', this.togglePause.bind(this))
+    this.keyWatcher.addEventListener('v', this.moreVerbose.bind(this))
+    this.keyWatcher.run()
+  }
+
+  goToNext() {
+    this.logger.debug('Skipping forwards')
+    this.stopTimeout()
+    this.showPreloadingImageImmediatly()
+    this.next()
+  }
+
+  goToPrevious() {
+    this.logger.debug('Skipping backwards')
+    this.showPreloadingImageImmediatly()
+    this.previous()
+  }
+
+  lessVerbose() {
+    const changed = this.logger.lessVerbose()
+    if (changed) {
+      this.logger.debug(`Logger level reduced to ${this.logger.level}`)
+    } else {
+      this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
+    }
+  }
+
+  moreVerbose() {
+    const changed = this.logger.moreVerbose()
+    if (changed) {
+      this.logger.debug(`Logger level increased to ${this.logger.level}`)
+    } else {
+      this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
+    }
+  }
+
+  removeCurrent() {
+    this.logger.debug('Deleting current image')
+    this.stopTimeout()
+    const index = this.viewer.showIndex
+    this.removeImage(index)
+    let nextIndex
+    if (index === this.images.length) {
+      nextIndex = 0
+    } else {
+      nextIndex = index
+    }
+    this.showPreloadingImageImmediatly()
+    this.preload(index)
+  }
+
+  slowDown() {
+    this.timeout = this.timeout + 500
+    this.logger.debug(`Slide change timeout increased to ${this.timeout}ms`)
+  }
+
+  speedUp() {
+    if (this.timeout <= PhotoSlideshow.MINIMUM_TIMEOUT) {
+      this.logger.debug(`Can't change slide change timeout as it is already at the quickest (${PhotoSlideshow.MINIMUM_TIMEOUT}ms)`)
+      return
+    }
+    this.timeout = this.timeout - 500
+    this.logger.debug(`Slide change timeout reduced to ${this.timeout}ms`)
+  }
+
+  toggleCaptions() {
+    if (this.viewer.showCaption) {
+      this.viewer.showCaption = false
+      this.viewer.resize()
+      this.logger.debug('Hide caption')
+    } else {
+      this.viewer.showCaption = true
+      this.viewer.resize()
+      this.logger.debug('Show caption')
+    }
+  }
+
+  togglePause() {
+    console.log('togglePause')
+    if (this.paused) {
+      this.logger.debug('Resuming slideshow')
+      this.next()
+      this.paused = false
+    } else {
+      this.logger.debug('Pausing slideshow')
+      this.stopTimeout()
+      this.viewer.cancelPreload()
+      this.paused = true
+    }
   }
 
   trackWindowResizing() {
@@ -87,101 +184,6 @@ class PhotoSlideshow {
 
   resize() {
     this.viewer.resize()
-  }
-
-  keydown(evt) {
-    evt = evt || window.event
-    switch(evt.keyCode) {
-    case SPACE: {
-      if (this.paused) {
-        this.logger.debug('Resuming slideshow')
-        this.next()
-        this.paused = false
-      } else {
-        this.logger.debug('Pausing slideshow')
-        this.stopTimeout()
-        this.viewer.cancelPreload()
-        this.paused = true
-      }
-      break
-    }
-    case LEFT_ARROW: {
-      this.logger.debug('Skipping backwards')
-      this.showPreloadingImageImmediatly()
-      this.previous()
-      break
-    }
-    case RIGHT_ARROW: {
-      this.logger.debug('Skipping forwards')
-      this.stopTimeout()
-      this.showPreloadingImageImmediatly()
-      this.next()
-      break
-    }
-    case DEL: {
-      this.logger.debug('Deleting current image')
-      this.stopTimeout()
-      const index = this.viewer.showIndex
-      this.removeImage(index)
-      let nextIndex
-      if (index === this.images.length) {
-        nextIndex = 0
-      } else {
-        nextIndex = index
-      }
-      this.showPreloadingImageImmediatly()
-      this.preload(index)
-      break
-    }
-    case PLUS: {
-      // Speed up changes
-      if (this.timeout <= PhotoSlideshow.MINIMUM_TIMEOUT) {
-        this.logger.debug(`Can't change slide change timeout as it is already at the quickest (${PhotoSlideshow.MINIMUM_TIMEOUT}ms)`)
-        return
-      }
-      this.timeout = this.timeout - 500
-      this.logger.debug(`Slide change timeout reduced to ${this.timeout}ms`)
-      break
-    }
-    case LETTER_C: {
-      if (this.viewer.showCaption) {
-        this.viewer.showCaption = false
-        this.viewer.resize()
-        this.logger.debug('Hide caption')
-      } else {
-        this.viewer.showCaption = true
-        this.viewer.resize()
-        this.logger.debug('Show caption')
-      }
-      break
-    }
-    case LETTER_Q: {
-      const changed = this.logger.lessVerbose()
-      if (changed) {
-        this.logger.debug(`Logger level reduced to ${this.logger.level}`)
-      } else {
-        this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
-      }
-      break
-    }
-    case LETTER_V: {
-      const changed = this.logger.moreVerbose()
-      if (changed) {
-        this.logger.debug(`Logger level increased to ${this.logger.level}`)
-      } else {
-        this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
-      }
-      break
-    }
-    case MINUS: {
-      // Slow down changes
-      this.timeout = this.timeout + 500
-      this.logger.debug(`Slide change timeout increased to ${this.timeout}ms`)
-      break
-    }
-    default:
-      this.logger.debug(`Unhandled keypress: ${evt.keyCode}`)
-    }
   }
 
   removeImage(index) {
@@ -211,16 +213,6 @@ class PhotoSlideshow {
           resolve()
         })
     })
-  }
-
-  start() {
-    if (!this.images) {
-      this.logger.debug('No config yet')
-      return
-    }
-    clearInterval(this.loadCheckInterval)
-    this.logger.debug('Starting slideshow')
-    this.preload(0)
   }
 
   previous() {

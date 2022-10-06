@@ -1,15 +1,16 @@
 import EventEmitter from './event-emitter.js'
 
-// Character codes
-const DEL = 46
-const LEFT_ARROW = 37
-const LETTER_C = 67
-const LETTER_Q = 81
-const LETTER_V = 86
-const MINUS = 173
-const PLUS = 61
-const RIGHT_ARROW = 39
-const SPACE = 32
+const MAPPING = {
+  32: 'space',
+  37: 'left',
+  39: 'right',
+  46: 'del',
+  61: 'plus',
+  67: 'c',
+  81: 'q',
+  86: 'v',
+  173: 'minus'
+}
 
 class KeyWatcher extends EventEmitter {
   constructor(document, logger) {
@@ -23,35 +24,10 @@ class KeyWatcher extends EventEmitter {
   }
 
   keydown(evt) {
-    switch(evt.keyCode) {
-    case SPACE:
-      this.emit('space')
-      break
-    case LEFT_ARROW:
-      this.emit('left')
-      break
-    case RIGHT_ARROW:
-      this.emit('right')
-      break
-    case DEL:
-      this.emit('del')
-      break
-    case PLUS:
-      this.emit('plus')
-      break
-    case LETTER_C:
-      this.emit('c')
-      break
-    case LETTER_Q:
-      this.emit('q')
-      break
-    case LETTER_V:
-      this.emit('v')
-      break
-    case MINUS:
-      this.emit('minus')
-      break
-    default:
+    const event = MAPPING[evt.keyCode]
+    if (event) {
+      this.emit(event)
+    } else {
       this.logger.debug(`Unhandled keypress: ${evt.keyCode}`)
     }
   }

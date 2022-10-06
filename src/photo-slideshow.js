@@ -169,7 +169,6 @@ class PhotoSlideshow {
   }
 
   togglePause() {
-    console.log('togglePause')
     if (this.paused) {
       this.logger.debug('Resuming slideshow')
       this.next()

@@ -63,9 +63,13 @@ class PhotoSlideshow {
     this.viewer.start()
     this.setupKeyWatcher()
     this.trackWindowResizing()
-    this.loadConfig().then(() => {
-      this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
-    })
+    this.loadConfig()
+      .then(() => {
+        this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
+      })
+      .catch(error => {
+        return
+      })
   }
 
   start() {
@@ -204,13 +208,26 @@ class PhotoSlideshow {
   }
 
   loadConfig() {
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve, reject) => {
       fetch(this.configURL)
-        .then(response => response.json())
+        .then(response => {
+          switch(response.status) {
+          case 200:
+            return response.json()
+          case 404:
+            throw '404 File not found'
+          default:
+            throw `Unexpected response status: ${response.status}`
+          }
+        })
         .then(data => {
           this.images = shuffle(data.images)
           this.timeout = data.timeout || PhotoSlideshow.DEFAULT_TIMEOUT
           resolve()
+        })
+        .catch(error => {
+          this.logger.error(error)
+          reject(error)
         })
     })
   }

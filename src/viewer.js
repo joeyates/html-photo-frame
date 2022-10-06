@@ -1,5 +1,6 @@
 import EventEmitter from './event-emitter.js'
 import ImageDetails from './image-details.js'
+import Spinner from './spinner.js'
 
 const CAPTION_HEIGHT = 32
 
@@ -59,6 +60,8 @@ class Viewer extends EventEmitter {
   }
 
   start() {
+    this.spinner = new Spinner(this.parent)
+    this.spinner.show()
     this.caption = document.createElement('h1')
     this.caption.classList.add('caption')
     this.parent.append(this.caption)
@@ -80,6 +83,7 @@ class Viewer extends EventEmitter {
   }
 
   imageLoaded(details) {
+    this.spinner.hide()
     this.ready = ImageDetails.clone(details)
     this.emit('imageLoaded', details.image, details.index)
     this.preloader = null

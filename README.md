@@ -34,12 +34,12 @@ a parameter: `https://example.com/photo-slideshow/index.html?json=slides.json`
 * "l" - get the list of noted photos (see "n"),
 * "n" - take note of a photo,
 * "r" - reset the list of noted photos (see "n"),
-* "<del>" - remove a photo from the list,
-* "<spacebar>" - pause,
+* "&lt;del>" - remove a photo from the list,
+* "&lt;spacebar>" - pause,
 * "←" - go back,
 * "→" - go forwards,
 * "-" - slow down slide changes,
-" "+" - speed up slide changes.
+* "+" - speed up slide changes.
 
 # Development
 

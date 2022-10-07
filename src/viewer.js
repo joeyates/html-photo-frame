@@ -40,16 +40,21 @@ class Viewer extends EventEmitter {
     }
   }
 
+  // Find the lowest index of all current images
+  // and return one less than that
   get previousIndex() {
-    if (this.preloader) {
-      return this.preloader.index - 1
-    } else {
-      if (this.ready) {
-        return this.ready.index - 1
-      } else {
-        return -1
-      }
+    const p = this.preloader?.index
+    const r = this.ready?.index
+    const s = this.showing?.index
+    const indexes = []
+    p !== undefined && indexes.push(p)
+    r !== undefined && indexes.push(r)
+    s !== undefined && indexes.push(s)
+    if (indexes.length === 0) {
+      return -1
     }
+    const min = Math.min(...indexes)
+    return min - 1
   }
 
   get showIndex() {

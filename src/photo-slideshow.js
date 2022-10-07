@@ -295,6 +295,7 @@ class PhotoSlideshow {
   }
 
   imageLoaded(image, index) {
+    this.stopTimeout()
     this.logger.debug(`Loading complete for image ${index} '${image.url}'`)
     if (!this.previousShow) {
       this.showPreloaded()

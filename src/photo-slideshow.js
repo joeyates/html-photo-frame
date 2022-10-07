@@ -110,6 +110,7 @@ class PhotoSlideshow {
     if (exists !== -1) {
       return
     }
+    this.logger.debug(`Adding note for '${image.url}'`)
     this.notes.push(image.url)
   }
 

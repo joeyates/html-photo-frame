@@ -53,10 +53,7 @@ class Viewer extends EventEmitter {
   }
 
   get showIndex() {
-    if (!this.showing) {
-      return null
-    }
-    return this.showing.index
+    return this.showing?.index
   }
 
   start() {

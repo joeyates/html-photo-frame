@@ -240,7 +240,7 @@ class PhotoSlideshow {
           case 200:
             return response.json()
           case 404:
-            throw '404 File not found'
+            throw `Configuration file '${this.configURL}' not found`
           default:
             throw `Unexpected response status: ${response.status}`
           }

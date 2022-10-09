@@ -13,3 +13,16 @@ services:
       - "8080:9080"
     volumes:
       - ../..:/app
+
+  cypress:
+    image: cypress
+    build:
+      dockerfile: ./cypress/docker/cypress.Dockerfile
+      context: ../..
+    container_name: cypress
+    stdin_open: true
+    tty: true
+    environment:
+      - CYPRESS_baseUrl=http://webserver:9080
+    volumes:
+      - ../..:/app

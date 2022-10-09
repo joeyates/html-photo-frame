@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  webserver:
+    image: webserver
+    build:
+      dockerfile: ./cypress/docker/webserver.Dockerfile
+      context: ../..
+    container_name: webserver
+    restart: always
+    tty: true
+    ports:
+      - "8080:9080"
+    volumes:
+      - ../..:/app

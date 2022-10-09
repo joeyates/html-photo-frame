@@ -9,3 +9,13 @@ context('Without a config parameter', () => {
     })
   })
 })
+
+context('With a valid config', () => {
+  beforeEach(() => {
+    cy.visit('/?config=/cypress/fixtures/conf.json')
+  })
+
+  it('shows images', () => {
+    cy.get('#viewer img').should('have.attr', 'src').should('eq', '/cypress/fixtures/camera.jpg')
+  })
+})

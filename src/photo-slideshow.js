@@ -17,6 +17,7 @@ class PhotoSlideshow {
     this.showNextTimeout = null
     this.paused = false
     this.previousShow = null
+    this.status = null
     this.timeout = null
   }
 
@@ -136,6 +137,7 @@ class PhotoSlideshow {
     } else {
       this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
     }
+    this.updateStatus()
   }
 
   listNotes() {
@@ -149,6 +151,7 @@ class PhotoSlideshow {
     } else {
       this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
     }
+    this.updateStatus()
   }
 
   removeCurrent() {
@@ -194,6 +197,7 @@ class PhotoSlideshow {
       this.viewer.resize()
       this.logger.debug('Show caption')
     }
+    this.updateStatus()
   }
 
   toggleHelp() {
@@ -233,6 +237,7 @@ class PhotoSlideshow {
       this.viewer.cancelPreload()
       this.paused = true
     }
+    this.updateStatus()
   }
 
   trackWindowResizing() {
@@ -362,6 +367,27 @@ class PhotoSlideshow {
     }
     this.showPreloadingImageImmediatly()
     this.preload(nextIndex)
+  }
+
+  updateStatus() {
+    if (this.status) {
+      this.status.remove()
+      this.status = null
+    }
+    let html = ''
+    if (this.viewer.showCaption) {
+      html += '<h1>C</h1>'
+    }
+    if (this.paused) {
+      html += '<h1>P</h1>'
+    }
+    if (this.logger.level === Logger.DEBUG) {
+      html += '<h1>V</h1>'
+    }
+    this.status = this.window.document.createElement('p')
+    this.status.classList.add('status')
+    this.status.innerHTML = html
+    this.element.append(this.status)
   }
 }
 

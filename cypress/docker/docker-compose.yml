@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  webserver:
+    image: webserver
+    build:
+      dockerfile: ./cypress/docker/webserver.Dockerfile
+      context: ../..
+    container_name: webserver
+    tty: true
+    ports:
+      - "8080:9080"
+    volumes:
+      - ../..:/app
+
+  cypress:
+    image: cypress
+    build:
+      dockerfile: ./cypress/docker/cypress.Dockerfile
+      context: ../..
+    container_name: cypress
+    depends:
+      - webserver
+    entrypoint: cypress run --config-file cypress/config.js
+    environment:
+      - CYPRESS_baseUrl=http://webserver:9080
+    volumes:
+      - ../..:/app

@@ -31,6 +31,7 @@ a parameter: `https://example.com/photo-slideshow/index.html?json=slides.json`
 # Keybindings
 
 * "c" - toggle caption (filename) visibility,
+* "f" - toggle "focus mode" - show only the photos from the same path as the current one,
 * "h" - show/hide the list of keybindings,
 * "l" - get the list of noted photos (see "n"),
 * "n" - take note of a photo,

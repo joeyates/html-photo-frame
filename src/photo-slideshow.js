@@ -7,6 +7,7 @@ class PhotoSlideshow {
   constructor(window, element) {
     this.window = window
     this.element = element
+    this.allImages = null
     this._errors = null
     this.help = null
     this.images = null
@@ -17,6 +18,7 @@ class PhotoSlideshow {
     this.showNextTimeout = null
     this.paused = false
     this.previousShow = null
+    this.status = null
     this.timeout = null
   }
 
@@ -27,6 +29,14 @@ class PhotoSlideshow {
     }
     const params = new URLSearchParams(search)
     return params.get('config')
+  }
+
+  get currentImage() {
+    const index = this.viewer.showIndex
+    if (index === null) {
+      return null
+    }
+    return this.images[index]
   }
 
   get errors() {
@@ -48,6 +58,10 @@ class PhotoSlideshow {
 
   get error() {
     return this.errors.join("\n")
+  }
+
+  get inFocusMode() {
+    return this.images !== this.allImages
   }
 
   get ok() {
@@ -87,6 +101,7 @@ class PhotoSlideshow {
   setupKeyWatcher() {
     this.keyWatcher = new KeyWatcher(this.window.document, this.logger)
     this.keyWatcher.addEventListener('c', this.toggleCaptions.bind(this))
+    this.keyWatcher.addEventListener('f', this.toggleFocusMode.bind(this))
     this.keyWatcher.addEventListener('del', this.removeCurrent.bind(this))
     this.keyWatcher.addEventListener('h', this.toggleHelp.bind(this))
     this.keyWatcher.addEventListener('l', this.listNotes.bind(this))
@@ -136,6 +151,7 @@ class PhotoSlideshow {
     } else {
       this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
     }
+    this.updateStatus()
   }
 
   listNotes() {
@@ -149,6 +165,7 @@ class PhotoSlideshow {
     } else {
       this.logger.debug(`Logger level unchanged: ${this.logger.level}`)
     }
+    this.updateStatus()
   }
 
   removeCurrent() {
@@ -194,6 +211,35 @@ class PhotoSlideshow {
       this.viewer.resize()
       this.logger.debug('Show caption')
     }
+    this.updateStatus()
+  }
+
+  toggleFocusMode() {
+    const current = this.currentImage
+    if (!current) {
+      this.logger.debug("Can't toggle focus mode as there's no current image")
+      return
+    }
+    this.stopTimeout()
+    this.viewer.cancelPreload()
+    if (this.inFocusMode) {
+      this.logger.debug('Leaving focus mode')
+      this.images = this.allImages
+    } else {
+      const path = current.url.replace(/\/[^/]*$/, '')
+      const images = this.allImages.filter(i => i.url.startsWith(path))
+      this.logger.debug(`Starting focus mode, ${images.length} images starting with '${path}'`)
+      this.images = images
+    }
+    const currentIndex = this.images.findIndex(i => i.url === current.url)
+    let nextIndex
+    if (currentIndex === this.images.length - 1) {
+      nextIndex = 0
+    } else {
+      nextIndex = currentIndex + 1
+    }
+    this.updateStatus()
+    this.preload(nextIndex)
   }
 
   toggleHelp() {
@@ -205,6 +251,7 @@ class PhotoSlideshow {
       this.help.classList.add('help')
       this.help.innerHTML = `
       c - show/hide captions,<br>
+      f - enter/leave 'focus' mode<br>
       h - show/hide this help,<br>
       l - list notes,<br>
       n - add current image to list of notes,<br>
@@ -233,6 +280,7 @@ class PhotoSlideshow {
       this.viewer.cancelPreload()
       this.paused = true
     }
+    this.updateStatus()
   }
 
   trackWindowResizing() {
@@ -274,7 +322,8 @@ class PhotoSlideshow {
           }
         })
         .then(data => {
-          this.images = shuffle(data.images)
+          this.allImages = shuffle(data.images)
+          this.images = this.allImages
           this.timeout = data.timeout || PhotoSlideshow.DEFAULT_TIMEOUT
           resolve()
         })
@@ -362,6 +411,30 @@ class PhotoSlideshow {
     }
     this.showPreloadingImageImmediatly()
     this.preload(nextIndex)
+  }
+
+  updateStatus() {
+    if (this.status) {
+      this.status.remove()
+      this.status = null
+    }
+    let html = ''
+    if (this.viewer.showCaption) {
+      html += '<h1>C</h1>'
+    }
+    if (this.inFocusMode) {
+      html += '<h1>F</h1>'
+    }
+    if (this.paused) {
+      html += '<h1>P</h1>'
+    }
+    if (this.logger.level === Logger.DEBUG) {
+      html += '<h1>V</h1>'
+    }
+    this.status = this.window.document.createElement('p')
+    this.status.classList.add('status')
+    this.status.innerHTML = html
+    this.element.append(this.status)
   }
 }
 

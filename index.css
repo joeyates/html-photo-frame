@@ -14,7 +14,7 @@ body {
   position: absolute;
   text-align: center;
   visibility: hidden;
-  width: 100%;
+  width: calc(100% - 16px);
 }
 #viewer > img {
   position: relative;

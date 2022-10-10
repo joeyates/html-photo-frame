@@ -4,6 +4,14 @@ html {
 body {
   height: calc(100% - 16px);
 }
+.help {
+  position: absolute;
+  top: 5em;
+  right: 5em;
+  z-index: 1;
+  padding: 1em;
+  background-color: white;
+}
 .viewer {
   width: 100%;
   height: 100%;

@@ -8,6 +8,7 @@ class PhotoSlideshow {
     this.window = window
     this.element = element
     this._errors = null
+    this.help = null
     this.images = null
     this.keyWatcher = null
     this.loadCheckInterval = null
@@ -87,6 +88,7 @@ class PhotoSlideshow {
     this.keyWatcher = new KeyWatcher(this.window.document, this.logger)
     this.keyWatcher.addEventListener('c', this.toggleCaptions.bind(this))
     this.keyWatcher.addEventListener('del', this.removeCurrent.bind(this))
+    this.keyWatcher.addEventListener('h', this.toggleHelp.bind(this))
     this.keyWatcher.addEventListener('l', this.listNotes.bind(this))
     this.keyWatcher.addEventListener('left', this.goToPrevious.bind(this))
     this.keyWatcher.addEventListener('minus', this.slowDown.bind(this))
@@ -191,6 +193,32 @@ class PhotoSlideshow {
       this.viewer.showCaption = true
       this.viewer.resize()
       this.logger.debug('Show caption')
+    }
+  }
+
+  toggleHelp() {
+    if (this.help) {
+      this.help.remove()
+      this.help = null
+    } else {
+      this.help = this.window.document.createElement('p')
+      this.help.classList.add('help')
+      this.help.innerHTML = `
+      c - show/hide captions,<br>
+      h - show/hide this help,<br>
+      l - list notes,<br>
+      n - add current image to list of notes,<br>
+      q - show less logging messages,<br>
+      r - reset (clear) the list of notes,<br>
+      v - show more logging messages,<br>
+      ← - go to previous image,<br>
+      → - go to next image,<br>
+      + - change slides more frequently,<br>
+      - - change slides less frequently,<br>
+      &lt;space> - pause/restart slideshow,<br>
+      &lt;del> - remove current image
+      `
+      this.element.append(this.help)
     }
   }
 

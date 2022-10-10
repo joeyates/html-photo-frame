@@ -324,6 +324,7 @@ class PhotoSlideshow {
 
   imageFailed(image, index) {
     this.logger.warn(`Failed to download image '${image.url}'`)
+    this.notes.push(`Missing ${image.url}`)
     this.removeImage(index)
     let nextIndex
     if (index === this.images.length) {

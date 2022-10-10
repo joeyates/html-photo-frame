@@ -82,6 +82,7 @@ class Viewer extends EventEmitter {
       this.preloader.cancelLoading()
       this.preloader = null
     }
+    this.ready = null
   }
 
   imageLoaded(details) {

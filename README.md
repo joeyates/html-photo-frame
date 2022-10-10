@@ -46,3 +46,11 @@ a parameter: `https://example.com/photo-slideshow/index.html?json=slides.json`
 npx static-server
 
 http://localhost:9080
+
+## Tests
+
+Run tests with
+
+```bash
+docker-compose --file cypress/docker/docker-compose.yml --project-name photo-slideshow run --rm cypress
+```

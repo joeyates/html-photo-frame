@@ -7,7 +7,6 @@ services:
       dockerfile: ./cypress/docker/webserver.Dockerfile
       context: ../..
     container_name: webserver
-    restart: always
     tty: true
     ports:
       - "8080:9080"
@@ -20,8 +19,9 @@ services:
       dockerfile: ./cypress/docker/cypress.Dockerfile
       context: ../..
     container_name: cypress
-    stdin_open: true
-    tty: true
+    depends:
+      - webserver
+    entrypoint: cypress run --config-file cypress/config.js
     environment:
       - CYPRESS_baseUrl=http://webserver:9080
     volumes:

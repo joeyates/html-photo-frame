@@ -27,12 +27,17 @@ class KeyWatcher extends EventEmitter {
   }
 
   keydown(evt) {
-    const event = MAPPING[evt.keyCode]
-    if (event) {
-      this.emit(event)
-    } else {
+    let event = MAPPING[evt.keyCode]
+    if (!event) {
       this.logger.debug(`Unhandled keypress: ${evt.keyCode}`)
     }
+    if (evt.ctrlKey) {
+      event = `Ctrl+${event}`
+    }
+    if (evt.shiftKey) {
+      event = `Shift+${event}`
+    }
+    this.emit(event)
   }
 }
 

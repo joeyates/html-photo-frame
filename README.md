@@ -43,7 +43,10 @@ a parameter: `https://example.com/photo-slideshow/index.html?json=slides.json`
 
 # Development
 
-npx static-server
+```bash
+podman build --tag photo-slideshow/dev-webserver:latest --file docker/webserver.Dockerfile .
+podman run --rm -ti --volume $PWD:/app --publish 9080:9080 photo-slideshow/dev-webserver:latest
+```
 
 http://localhost:9080
 

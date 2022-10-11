@@ -22,11 +22,15 @@ class Viewer extends EventEmitter {
       return this.preloader.index + 1
     } else {
       if (this.showing) {
-        if (this.showing.index === this.ready.index) {
-          return this.showing.index + 1
+        if (this.ready) {
+          if (this.showing.index === this.ready.index) {
+            return this.showing.index + 1
+          } else {
+            // The ready image hasn't been shown
+            return this.ready.index
+          }
         } else {
-          // The ready image hasn't been shown
-          return this.ready.index
+          return this.showing.index + 1
         }
       } else {
         // Nothing has been shown yet

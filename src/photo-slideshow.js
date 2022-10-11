@@ -71,6 +71,11 @@ class PhotoSlideshow {
   run() {
     this.logger = new Logger()
     if (!this.ok) {
+      const error = this.error
+      console.error(error)
+      if (this.element) {
+        this.element.innerHTML = error
+      }
       return
     }
     this.viewer = new Viewer(this.element, this.logger)

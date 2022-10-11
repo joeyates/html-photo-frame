@@ -1,18 +1,17 @@
+import Config from './config.js'
 import KeyWatcher from './key-watcher.js'
 import Logger from './logger.js'
-import shuffle from './shuffle.js'
 import Viewer from './viewer.js'
 
 class PhotoSlideshow {
   constructor(window, element) {
     this.window = window
     this.element = element
-    this.allImages = null
+    this._config = null
     this._errors = null
     this.help = null
     this.images = null
     this.keyWatcher = null
-    this.loadCheckInterval = null
     this.logger = null
     this.notes = []
     this.showNextTimeout = null
@@ -22,13 +21,13 @@ class PhotoSlideshow {
     this.timeout = null
   }
 
-  get configURL() {
-    const search = this.window.location.search
-    if (search === '') {
-      return null
+  get config() {
+    if (this._config) {
+      return this._config
     }
-    const params = new URLSearchParams(search)
-    return params.get('config')
+
+    this._config = new Config(this.window)
+    return this._config
   }
 
   get currentImage() {
@@ -50,7 +49,7 @@ class PhotoSlideshow {
     if (!this.element) {
       this._errors.push('element is null')
     }
-    if (!this.configURL) {
+    if (!this.config.url) {
       this._errors.push('supply a config=URL query parameter')
     }
     return this._errors
@@ -61,7 +60,7 @@ class PhotoSlideshow {
   }
 
   get inFocusMode() {
-    return this.images !== this.allImages
+    return this.images !== this.config.images
   }
 
   get ok() {
@@ -84,23 +83,21 @@ class PhotoSlideshow {
     this.viewer.start()
     this.setupKeyWatcher()
     this.trackWindowResizing()
-    this.loadConfig()
-      .then(() => {
-        this.loadCheckInterval = setInterval(this.start.bind(this), 1000)
-      })
-      .catch(error => {
-        return
-      })
+    this.config.addEventListener('loaded', this.configLoaded.bind(this))
+    this.config.addEventListener('failed', this.configFailed.bind(this))
+    this.config.load()
   }
 
-  start() {
-    if (!this.images) {
-      this.logger.debug('No config yet')
-      return
-    }
-    clearInterval(this.loadCheckInterval)
+  configLoaded() {
+    this.images = this.config.images
+    this.timeout = this.config.timeout
     this.logger.debug('Starting slideshow')
     this.preload(0)
+  }
+
+  configFailed(error) {
+    this.logger.debug('Failed to load config: ', error)
+    this.element.innerHTML = error
   }
 
   setupKeyWatcher() {
@@ -229,10 +226,10 @@ class PhotoSlideshow {
     this.viewer.cancelPreload()
     if (this.inFocusMode) {
       this.logger.debug('Leaving focus mode')
-      this.images = this.allImages
+      this.images = this.config.images
     } else {
       const path = current.url.replace(/\/[^/]*$/, '')
-      const images = this.allImages.filter(i => i.url.startsWith(path))
+      const images = this.config.images.filter(i => i.url.startsWith(path))
       this.logger.debug(`Starting focus mode, ${images.length} images starting with '${path}'`)
       this.images = images
     }
@@ -311,32 +308,6 @@ class PhotoSlideshow {
     const image = this.images[index]
     this.logger.debug(`Removing image ${index}/${this.images.length} '${image.url}'`)
     this.images.splice(index, 1)
-  }
-
-  loadConfig() {
-    return new Promise((resolve, reject) => {
-      fetch(this.configURL)
-        .then(response => {
-          switch(response.status) {
-          case 200:
-            return response.json()
-          case 404:
-            throw `Configuration file '${this.configURL}' not found`
-          default:
-            throw `Unexpected response status: ${response.status}`
-          }
-        })
-        .then(data => {
-          this.allImages = shuffle(data.images)
-          this.images = this.allImages
-          this.timeout = data.timeout || PhotoSlideshow.DEFAULT_TIMEOUT
-          resolve()
-        })
-        .catch(error => {
-          this.logger.error(error)
-          reject(error)
-        })
-    })
   }
 
   previous() {
@@ -443,7 +414,6 @@ class PhotoSlideshow {
   }
 }
 
-PhotoSlideshow.DEFAULT_TIMEOUT = 5000
 PhotoSlideshow.MINIMUM_TIMEOUT = 500
 
 export default PhotoSlideshow

@@ -32,6 +32,7 @@ class PhotoSlideshow {
     }
     this.window.addEventListener('resize', this.images.resize.bind(this.images))
     this.images.addEventListener('error', this.imagesError.bind(this))
+    this.images.addEventListener('missingImage', this.missingImage.bind(this))
     this.images.addEventListener('updateStatus', this.updateStatus.bind(this))
     this.images.start()
     this.setupKeyWatcher()
@@ -40,6 +41,10 @@ class PhotoSlideshow {
   imagesError(error) {
     this.logger.error(error)
     this.element.innerHTML = error
+  }
+
+  missingImage(image) {
+    this.notes.push(`Missing ${image.url}`)
   }
 
   setupKeyWatcher() {

@@ -245,7 +245,7 @@ class Images extends EventEmitter {
 
   imageFailed(image, index) {
     this.logger.warn(`Failed to download image '${image.url}'`)
-    this.notes.push(`Missing ${image.url}`)
+    this.emit('missingImage', image)
     this.removeImage(index)
     let nextIndex
     if (index === this.images.length) {

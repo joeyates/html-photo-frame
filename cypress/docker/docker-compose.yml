@@ -2,7 +2,7 @@ version: "3"
 
 services:
   webserver:
-    image: photo-slideshow/test-webserver
+    image: html-photo-frame/test-webserver
     build:
       dockerfile: ./cypress/docker/webserver.Dockerfile
       context: ../..
@@ -14,7 +14,7 @@ services:
       - ../..:/app
 
   cypress:
-    image: photo-slideshow/cypress
+    image: html-photo-frame/cypress
     build:
       dockerfile: ./cypress/docker/cypress.Dockerfile
       context: ../..

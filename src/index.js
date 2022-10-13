@@ -1,5 +1,5 @@
-import PhotoSlideshow from './photo-slideshow.js'
+import Controller from './controller.js'
 
 const viewer = document.getElementById('viewer')
-const slides = new PhotoSlideshow(window, viewer)
-slides.run()
+const controller = new Controller(window, viewer)
+controller.run()

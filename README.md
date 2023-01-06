@@ -52,7 +52,11 @@ docker build --tag html-photo-frame/dev-webserver:latest --file docker/webserver
 docker run --rm -ti --volume $PWD:/app --publish 9080:9080 html-photo-frame/dev-webserver:latest
 ```
 
-http://localhost:9080
+Create a file `conf.json` with the list of photos to view.
+
+```
+http://localhost:9080/?config=conf.json
+```
 
 ## Tests
 

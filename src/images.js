@@ -64,13 +64,13 @@ class Images extends EventEmitter {
   goToNext() {
     this.logger.debug('Skipping forwards')
     this.stopTimeout()
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.next()
   }
 
   goToPrevious() {
     this.logger.debug('Skipping backwards')
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.previous()
   }
 
@@ -158,7 +158,7 @@ class Images extends EventEmitter {
     } else {
       nextIndex = index
     }
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.preload(index)
   }
 
@@ -212,7 +212,7 @@ class Images extends EventEmitter {
     this.viewer.preload(next, index)
   }
 
-  showPreloadingImageImmediatly() {
+  showPreloadingImageImmediately() {
     this.previousShow = null
   }
 
@@ -253,7 +253,7 @@ class Images extends EventEmitter {
     } else {
       nextIndex = index
     }
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.preload(nextIndex)
   }
 }

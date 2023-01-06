@@ -116,7 +116,7 @@ class PhotoSlideshow {
       f - enter/leave 'focus' mode<br>
       h - show/hide this help,<br>
       l - list notes,<br>
-      n - add current image to list of notes,<br>
+      n - add current image URL to list of notes,<br>
       q - show less logging messages,<br>
       r - reset (clear) the list of notes,<br>
       v - show more logging messages,<br>

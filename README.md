@@ -34,7 +34,7 @@ a parameter: `https://example.com/photo-frame/index.html?json=slides.json`
 * "f" - toggle "focus mode" - show only the photos from the same path as the current one,
 * "h" - show/hide the list of keybindings,
 * "l" - get the list of noted photos (see "n"),
-* "n" - take note of a photo,
+* "n" - add current image URL to list of notes,
 * "q" - be less verbose,
 * "r" - reset the list of noted photos (see "n"),
 * "v" - be more verbose,

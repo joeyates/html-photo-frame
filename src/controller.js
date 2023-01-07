@@ -2,7 +2,7 @@ import Images from './images.js'
 import KeyWatcher from './key-watcher.js'
 import Logger from './logger.js'
 
-class PhotoSlideshow {
+class Controller {
   constructor(window, element) {
     this.window = window
     this.element = element
@@ -156,4 +156,4 @@ class PhotoSlideshow {
   }
 }
 
-export default PhotoSlideshow
+export default Controller

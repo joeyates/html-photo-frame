@@ -91,18 +91,21 @@ class Viewer extends EventEmitter {
 
   imageLoaded(details) {
     this.spinner.hide()
-    this.emit('imageLoaded', details.image, details.index)
     this.ready = this.preloader
+    // Unset preloader **before** emitting signals, as some callbacks
+    // end up being so slow, the following preload gets borked.
     this.preloader = null
+    this.emit('imageLoaded', details.image, details.index)
   }
 
-  imageFailed(details, ...args) {
-    this.emit('imageFailed', details.image, details.index)
+  imageFailed(details, error) {
+    this.emit('imageFailed', details.image, details.index, error)
     this.preloader = null
   }
 
   showPreloaded() {
     if (!this.ready) {
+      this.logger.warn('Viewer.showPreloaded - No image ready')
       return
     }
     this.logger.debug(`Showing preloaded image ${this.ready.index} '${this.ready.image.url}'`)

@@ -54,6 +54,14 @@ class Logger {
     console.log(this.timestamp(), ...args)
   }
 
+  table(arg) {
+    if (this.level < Logger.DEBUG) {
+      return
+    }
+    console.log(this.timestamp())
+    console.table(arg)
+  }
+
   timestamp() {
     return (new Date()).toJSON()
   }

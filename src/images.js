@@ -237,7 +237,7 @@ class Images extends EventEmitter {
   }
 
   showPreloaded() {
-    this.showNextTimeout = null
+    this.stopTimeout()
     this.viewer.showPreloaded()
     this.previousShow = new Date
     this.next()

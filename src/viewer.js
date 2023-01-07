@@ -91,8 +91,8 @@ class Viewer extends EventEmitter {
 
   imageLoaded(details) {
     this.spinner.hide()
-    this.ready = ImageDetails.clone(details)
     this.emit('imageLoaded', details.image, details.index)
+    this.ready = this.preloader
     this.preloader = null
   }
 
@@ -109,7 +109,8 @@ class Viewer extends EventEmitter {
     if (this.showing) {
       this.showing.img.remove()
     }
-    this.showing = ImageDetails.clone(this.ready)
+    this.showing = this.ready
+    this.ready = null
     this.parent.append(this.showing.img)
     this.resize()
   }

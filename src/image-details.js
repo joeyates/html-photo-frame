@@ -1,8 +1,4 @@
 class ImageDetails {
-  static clone(details) {
-    return new ImageDetails(details.image, details.index, details.img)
-  }
-
   constructor(image, index, img) {
     this.image = image
     this.index = index

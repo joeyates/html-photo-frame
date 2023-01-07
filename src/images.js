@@ -1,5 +1,6 @@
 import Config from './config.js'
 import EventEmitter from './event-emitter.js'
+import Timings from './timings.js'
 import Viewer from './viewer.js'
 
 const MINIMUM_TIMEOUT = 500
@@ -9,6 +10,7 @@ class Images extends EventEmitter {
     super()
     this.logger = logger
     this.images = null
+    this.timings = new Timings({logger})
     this.paused = false
     this.previousShow = null
     this.showNextTimeout = null
@@ -64,13 +66,13 @@ class Images extends EventEmitter {
   goToNext() {
     this.logger.debug('Skipping forwards')
     this.stopTimeout()
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.next()
   }
 
   goToPrevious() {
     this.logger.debug('Skipping backwards')
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.previous()
   }
 
@@ -158,7 +160,7 @@ class Images extends EventEmitter {
     } else {
       nextIndex = index
     }
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.preload(index)
   }
 
@@ -212,7 +214,7 @@ class Images extends EventEmitter {
     this.viewer.preload(next, index)
   }
 
-  showPreloadingImageImmediatly() {
+  showPreloadingImageImmediately() {
     this.previousShow = null
   }
 
@@ -220,7 +222,7 @@ class Images extends EventEmitter {
     this.stopTimeout()
     this.logger.debug(`Loading complete for image ${index} '${image.url}'`)
     if (!this.previousShow) {
-      this.showPreloaded()
+      this.showPreloaded('first')
       return
     }
     // We've waited for the image to download
@@ -229,22 +231,32 @@ class Images extends EventEmitter {
     // Have we waited more than the usual wait time between images?
     const remainder = this.timeout - elapsed
     if (remainder < 0) {
-      this.showPreloaded()
+      this.showPreloaded('late')
       return
     }
     // Wait the remainder of the time
-    this.showNextTimeout = setTimeout(this.showPreloaded.bind(this), remainder)
+    this.showNextTimeout = setTimeout(() => {
+      this.showPreloaded(`with remainder ${remainder}`)
+    }, remainder)
   }
 
-  showPreloaded() {
-    this.showNextTimeout = null
+  showPreloaded(reason) {
+    this.stopTimeout()
     this.viewer.showPreloaded()
+    this.logTimings(reason)
     this.previousShow = new Date
     this.next()
   }
 
-  imageFailed(image, index) {
-    this.logger.warn(`Failed to download image '${image.url}'`)
+  logTimings(reason) {
+    const index = this.viewer.showIndex
+    const current = this.currentImage
+    this.timings.add({reason, index, url: current.url})
+    this.timings.log()
+  }
+
+  imageFailed(image, index, error) {
+    this.logger.warn(`Failed to download image '${image.url}'`, error)
     this.emit('missingImage', image)
     this.removeImage(index)
     let nextIndex
@@ -253,7 +265,7 @@ class Images extends EventEmitter {
     } else {
       nextIndex = index
     }
-    this.showPreloadingImageImmediatly()
+    this.showPreloadingImageImmediately()
     this.preload(nextIndex)
   }
 }

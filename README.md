@@ -34,7 +34,7 @@ a parameter: `https://example.com/photo-frame/index.html?json=slides.json`
 * "f" - toggle "focus mode" - show only the photos from the same path as the current one,
 * "h" - show/hide the list of keybindings,
 * "l" - get the list of noted photos (see "n"),
-* "n" - take note of a photo,
+* "n" - add current image URL to list of notes,
 * "q" - be less verbose,
 * "r" - reset the list of noted photos (see "n"),
 * "v" - be more verbose,
@@ -52,7 +52,11 @@ docker build --tag html-photo-frame/dev-webserver:latest --file docker/webserver
 docker run --rm -ti --volume $PWD:/app --publish 9080:9080 html-photo-frame/dev-webserver:latest
 ```
 
-http://localhost:9080
+Create a file `conf.json` with the list of photos to view.
+
+```
+http://localhost:9080/?config=conf.json
+```
 
 ## Tests
 

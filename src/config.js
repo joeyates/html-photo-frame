@@ -27,7 +27,7 @@ class Config extends EventEmitter {
         case 200:
           return response.json()
         case 404:
-          throw `Configuration file '${this.configURL}' not found`
+          throw `Configuration file '${this.url}' not found`
         default:
           throw `Unexpected response status: ${response.status}`
         }

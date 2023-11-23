@@ -1,4 +1,4 @@
-class ImageDetails {
+class ImageLoader {
   constructor(image, index, img) {
     this.image = image
     this.index = index
@@ -22,4 +22,4 @@ class ImageDetails {
   }
 }
 
-export default ImageDetails
+export default ImageLoader

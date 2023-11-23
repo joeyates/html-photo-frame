@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import Image from './image.js'
 import shuffle from './shuffle.js'
 
 const DEFAULT_TIMEOUT = 5000
@@ -27,13 +28,14 @@ class Config extends EventEmitter {
         case 200:
           return response.json()
         case 404:
-          throw `Configuration file '${this.configURL}' not found`
+          throw `Configuration file '${this.url}' not found`
         default:
           throw `Unexpected response status: ${response.status}`
         }
       })
       .then(data => {
-        this.images = shuffle(data.images)
+        const images = data.images.map(i => new Image(i))
+        this.images = shuffle(images)
         this.timeout = data.timeout || DEFAULT_TIMEOUT
         this.emit('loaded')
       })

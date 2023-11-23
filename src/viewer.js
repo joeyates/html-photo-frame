@@ -1,5 +1,5 @@
 import EventEmitter from './event-emitter.js'
-import ImageDetails from './image-details.js'
+import ImageLoader from './image-loader.js'
 import Spinner from './spinner.js'
 
 const CAPTION_HEIGHT = 32
@@ -74,7 +74,7 @@ class Viewer extends EventEmitter {
   }
 
   preload(image, index) {
-    this.preloader = new ImageDetails(image, index, new Image())
+    this.preloader = new ImageLoader(image, index, new Image())
     this.preloader.load(
       this.imageLoaded.bind(this),
       this.imageFailed.bind(this)
@@ -155,7 +155,7 @@ class Viewer extends EventEmitter {
     this.showing.img.style.top = top
     if (this.showCaption) {
       this.caption.style.visibility = 'visible'
-      this.caption.innerHTML = this.showing.image.url
+      this.caption.innerHTML = this.showing.image.caption
     } else {
       this.caption.style.visibility = 'hidden'
     }

@@ -9,7 +9,7 @@ services:
     container_name: webserver
     tty: true
     ports:
-      - "8080:9080"
+      - "9080:9080"
     volumes:
       - ../..:/app
 
@@ -19,7 +19,7 @@ services:
       dockerfile: ./cypress/docker/cypress.Dockerfile
       context: ../..
     container_name: cypress
-    depends:
+    depends_on:
       - webserver
     entrypoint: cypress run --config-file cypress/config.js
     environment:

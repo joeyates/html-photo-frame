@@ -1,4 +1,4 @@
-import Images from './images.js'
+import Slideshow from './slideshow.js'
 import KeyWatcher from './key-watcher.js'
 import Logger from './logger.js'
 
@@ -11,7 +11,7 @@ class Controller {
     this.notes = []
     this.status = null
     this.logger = new Logger()
-    this.images = new Images(this.window, this.element, this.logger)
+    this.slideshow = new Slideshow(this.window, this.element, this.logger)
   }
 
   run() {
@@ -30,11 +30,11 @@ class Controller {
       }
       return
     }
-    this.window.addEventListener('resize', this.images.resize.bind(this.images))
-    this.images.addEventListener('error', this.imagesError.bind(this))
-    this.images.addEventListener('missingImage', this.missingImage.bind(this))
-    this.images.addEventListener('updateStatus', this.updateStatus.bind(this))
-    this.images.start()
+    this.window.addEventListener('resize', this.slideshow.resize.bind(this.slideshow))
+    this.slideshow.addEventListener('error', this.imagesError.bind(this))
+    this.slideshow.addEventListener('missingImage', this.missingImage.bind(this))
+    this.slideshow.addEventListener('updateStatus', this.updateStatus.bind(this))
+    this.slideshow.start()
     this.setupKeyWatcher()
   }
 
@@ -49,25 +49,25 @@ class Controller {
 
   setupKeyWatcher() {
     this.keyWatcher = new KeyWatcher(this.window.document, this.logger)
-    this.keyWatcher.addEventListener('c', this.images.toggleCaptions.bind(this.images))
-    this.keyWatcher.addEventListener('f', this.images.toggleFocusMode.bind(this.images))
-    this.keyWatcher.addEventListener('del', this.images.removeCurrent.bind(this.images))
+    this.keyWatcher.addEventListener('c', this.slideshow.toggleCaptions.bind(this.slideshow))
+    this.keyWatcher.addEventListener('f', this.slideshow.toggleFocusMode.bind(this.slideshow))
+    this.keyWatcher.addEventListener('del', this.slideshow.removeCurrent.bind(this.slideshow))
     this.keyWatcher.addEventListener('h', this.toggleHelp.bind(this))
     this.keyWatcher.addEventListener('l', this.listNotes.bind(this))
-    this.keyWatcher.addEventListener('left', this.images.goToPrevious.bind(this.images))
-    this.keyWatcher.addEventListener('minus', this.images.slowDown.bind(this.images))
+    this.keyWatcher.addEventListener('left', this.slideshow.goToPrevious.bind(this.slideshow))
+    this.keyWatcher.addEventListener('minus', this.slideshow.slowDown.bind(this.slideshow))
     this.keyWatcher.addEventListener('n', this.addNote.bind(this))
-    this.keyWatcher.addEventListener('plus', this.images.speedUp.bind(this.images))
+    this.keyWatcher.addEventListener('plus', this.slideshow.speedUp.bind(this.slideshow))
     this.keyWatcher.addEventListener('q', this.lessVerbose.bind(this))
     this.keyWatcher.addEventListener('r', this.resetNotes.bind(this))
-    this.keyWatcher.addEventListener('right', this.images.goToNext.bind(this.images))
-    this.keyWatcher.addEventListener('space', this.images.togglePause.bind(this.images))
+    this.keyWatcher.addEventListener('right', this.slideshow.goToNext.bind(this.slideshow))
+    this.keyWatcher.addEventListener('space', this.slideshow.togglePause.bind(this.slideshow))
     this.keyWatcher.addEventListener('v', this.moreVerbose.bind(this))
     this.keyWatcher.run()
   }
 
   addNote() {
-    const image = this.images.currentImage
+    const image = this.slideshow.currentImage
     const exists = this.notes.findIndex(url => url === image.url)
     if (exists !== -1) {
       return
@@ -137,13 +137,13 @@ class Controller {
       this.status = null
     }
     let html = ''
-    if (this.images.showCaption) {
+    if (this.slideshow.showCaption) {
       html += '<h1>C</h1>'
     }
-    if (this.images.inFocusMode) {
+    if (this.slideshow.inFocusMode) {
       html += '<h1>F</h1>'
     }
-    if (this.images.paused) {
+    if (this.slideshow.paused) {
       html += '<h1>P</h1>'
     }
     if (this.logger.level === Logger.DEBUG) {

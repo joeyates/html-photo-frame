@@ -5,7 +5,7 @@ import Viewer from './viewer.js'
 
 const MINIMUM_TIMEOUT = 500
 
-class Images extends EventEmitter {
+class Slideshow extends EventEmitter {
   constructor(window, element, logger) {
     super()
     this.logger = logger
@@ -270,4 +270,4 @@ class Images extends EventEmitter {
   }
 }
 
-export default Images
+export default Slideshow

@@ -19,6 +19,10 @@ Create a JSON file like this:
 }
 ```
 
+The images **must** have a `url`, and
+can have a `caption`, which will be used in place of the URL
+if the user activates captions (see keybindings).
+
 Open html-photo-frame with the JSON file's URL as
 a parameter: `https://example.com/photo-frame/index.html?json=slides.json`
 
